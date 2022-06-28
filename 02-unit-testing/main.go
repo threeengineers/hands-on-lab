@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -10,6 +12,16 @@ import (
 
 func main() {
 	e := echo.New()
+
+	e.GET("/api/v1/hello", func(c echo.Context) error {
+		var result string = "hello world"
+
+		if os.Getenv("HELLO_MSG") != "" {
+			result = os.Getenv("HELLO_MSG")
+		}
+
+		return c.JSON(http.StatusOK, map[string]interface{}{"result": result})
+	})
 
 	e.GET("/api/v1/calculator/add", func(c echo.Context) error {
 		var err error
@@ -49,5 +61,11 @@ func main() {
 		return c.JSON(http.StatusOK, map[string]interface{}{"result": result})
 	})
 
-	e.Logger.Fatal(e.Start(":1323"))
+	var port string
+	if os.Getenv("APP_PORT") == "" {
+		port = ":1323"
+	} else {
+		port = fmt.Sprintf(":%s", os.Getenv("APP_PORT"))
+	}
+	e.Logger.Fatal(e.Start(port))
 }
